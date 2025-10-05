@@ -1,0 +1,28 @@
+.feed {
+  display: flex;
+  flex-wrap: wrap;
+  /* allows items to move to next line */
+  gap: 16px;
+  /* space between cards */
+  justify-content: left;
+  /* center cards horizontally */
+  align-items: flex-start;
+  /* align to top */
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.feed>div {
+  flex: 0 1 300px;
+  /* each card takes up to 300px width */
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feed>div:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
