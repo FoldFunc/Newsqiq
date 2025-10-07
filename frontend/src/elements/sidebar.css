@@ -1,0 +1,55 @@
+/* sidebar.css */
+
+/* Sidebar container */
+.sidebar {
+  position: fixed;
+  width: 200px;               /* Fixed width */
+  height: 100vh;              /* Full viewport height */
+  background-color: #1e1e2f;  /* Dark background */
+  color: #fff;                /* White text */
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;     /* Stack items vertically */
+  gap: 20px;
+}
+
+/* Sidebar title */
+.sidebar-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Sidebar list container */
+.sidebar ul {
+  list-style: none;      /* remove bullets */
+  padding: 0;            /* remove default padding */
+  margin: 0;             /* remove default margin */
+  width: 100%;           /* take full sidebar width */
+  display: flex;
+  flex-direction: column; /* stack links vertically */
+  gap: 10px;              /* optional space between links */
+}
+
+/* Each link item */
+.sidebar ul li {
+  width: 100%;           /* li takes full width */
+}
+
+/* Links inside the list */
+.sidebar ul li a {
+  display: block;        /* make link block so it fills the li */
+  width: 100%;           /* full width of li */
+  padding: 5px 7px;    /* some padding for click area */
+  text-decoration: none; /* remove underline */
+  color: #fff;           /* text color */
+  border-radius: 5px;    /* optional rounding */
+  transition: background 0.2s;
+}
+
+/* Hover effect */
+.sidebar ul li a:hover {
+  background-color: #3a3a5e;
+}
+

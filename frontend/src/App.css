@@ -1,19 +1,30 @@
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;       /* Optional: ensures full height */
+  font-family: Arial, sans-serif;
+}
+.screen {
+  display: flex;
+  gap 5px;
+}
 .feed {
+  margin-left: 200px;
   display: flex;
   flex-wrap: wrap;
   /* allows items to move to next line */
-  gap: 16px;
+  gap: 8px;
   /* space between cards */
   justify-content: left;
   /* center cards horizontally */
   align-items: flex-start;
   /* align to top */
-  padding: 20px;
+  padding: 10px;
   box-sizing: border-box;
 }
 
 .feed>div {
-  flex: 0 1 300px;
+  flex: 200px;
   /* each card takes up to 300px width */
   background: #fff;
   border-radius: 12px;
