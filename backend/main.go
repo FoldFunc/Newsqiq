@@ -1,15 +1,19 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"log"
+	"os"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
-	"os"
 )
 
 var DB *gorm.DB
@@ -29,9 +33,74 @@ func initDB() {
 	if err != nil {
 		log.Fatal("Failed to connect to the DB: ", err)
 	}
-	// DB.AutoMigrate(&SomeStruct)
 	DB.AutoMigrate(&UsersDB{})
 	log.Println("Connected to the DB")
+}
+func login_handler_db(email, password string) error {
+	var checkUser UsersDB
+
+	err := DB.First(&checkUser, "email = ?", email).Error
+	if err != nil {
+		return fmt.Errorf("user already exsists")
+	}
+	var result struct {
+		Password string
+	}
+
+	err = DB.Model(&UsersDB{}).
+		Select("password").
+		Where("email = ?", email).
+		First(&result).Error
+	if err != nil {
+		return fmt.Errorf("user not found or DB error: %w", err)
+	}
+
+	if bcrypt.CompareHashAndPassword([]byte(result.Password), []byte(password)) != nil {
+		return fmt.Errorf("incorrect password")
+	}
+
+	return nil
+}
+
+type LoginHandlerStruct struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func login_handler(c *fiber.Ctx) error {
+	if c.Method() != fiber.MethodPost {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid request type",
+		})
+	}
+	var data LoginHandlerStruct
+	if err := c.BodyParser(&data); err != nil {
+		return c.Status(400).JSON(fiber.Map{
+			"error": "Invalid request body",
+		})
+	}
+	if err := login_handler_db(data.Email, data.Password); err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error": "Internal server error",
+		})
+	}
+	var hash string
+	bytes := make([]byte, 32)
+	if _, err := rand.Read(bytes); err != nil {
+		hash = ""
+	}
+	hash = hex.EncodeToString(bytes)
+	cookie := new(fiber.Cookie)
+	cookie.Name = "session_token"
+	cookie.Value = hash
+	cookie.Expires = time.Now().Add(24 * time.Hour)
+	cookie.HTTPOnly = true
+	cookie.Secure = false
+	cookie.SameSite = "Lax"
+	c.Cookie(cookie)
+	return c.Status(200).JSON(fiber.Map{
+		"message": "Logged in",
+	})
 }
 
 type RegisterHandlerStruct struct {
@@ -58,7 +127,7 @@ func register_handler(c *fiber.Ctx) error {
 		})
 	}
 	return c.Status(201).JSON(fiber.Map{
-		"succes": "User created",
+		"message": "User created",
 	})
 }
 func register_handler_db(name, email, password string) error {
@@ -103,9 +172,11 @@ func main() {
 		AllowOrigins: "http://localhost:5173",
 		AllowMethods: "GET, POST, DELETE",
 		AllowHeaders: "Origin, Content-Type, Accept",
+		AllowCredentials: true,
 	}))
 	server.Get("/api/fetch_feed_amount", fetch_feed_amount_handler)
 	server.Post("/api/register", register_handler)
+	server.Post("/api/login", login_handler)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "42069"
